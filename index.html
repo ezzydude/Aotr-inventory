@@ -67,9 +67,60 @@
 </head>
 <body>
   <nav class="auth">
-    <button type="button"><span>Login</span></button>
-    <button type="button"><span>Sign up</span></button>
+    <button type="button" id="loginBtn"><span>Login</span></button>
+    <button type="button" id="signupBtn"><span>Sign up</span></button>
+    <button type="button" id="logoutBtn" hidden><span>Sign out</span></button>
   </nav>
   <h1>Inventory</h1>
+  <script src="https://cdn.jsdelivr.net/npm/firebase@10.14.1/firebase-app-compat.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/firebase@10.14.1/firebase-auth-compat.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyAoanjlkRmr0Nzcy5FcY6VuKq_MjYXmSqI",
+      authDomain: "aotr-inventory.firebaseapp.com",
+      projectId: "aotr-inventory",
+      storageBucket: "aotr-inventory.firebasestorage.app",
+      messagingSenderId: "250406485897",
+      appId: "1:250406485897:web:8c669d84ed253ecc56eb58",
+      measurementId: "G-4FZY4DLH7T"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const provider = new firebase.auth.GoogleAuthProvider();
+
+    const loginBtn = document.getElementById("loginBtn");
+    const signupBtn = document.getElementById("signupBtn");
+    const logoutBtn = document.getElementById("logoutBtn");
+
+    async function googleSignIn() {
+      try {
+        await auth.signInWithPopup(provider);
+      } catch (err) {
+        if (err.code !== "auth/popup-closed-by-user" && err.code !== "auth/cancelled-popup-request") {
+          alert("Sign-in failed: " + err.message);
+        }
+      }
+    }
+
+    loginBtn.addEventListener("click", () => {
+      if (!auth.currentUser) googleSignIn();
+    });
+    signupBtn.addEventListener("click", googleSignIn);
+    logoutBtn.addEventListener("click", () => auth.signOut());
+
+    auth.onAuthStateChanged((user) => {
+      if (user) {
+        const name = (user.displayName || user.email || "Account").split(" ")[0];
+        loginBtn.querySelector("span").textContent = name;
+        signupBtn.hidden = true;
+        logoutBtn.hidden = false;
+      } else {
+        loginBtn.querySelector("span").textContent = "Login";
+        signupBtn.hidden = false;
+        logoutBtn.hidden = true;
+      }
+    });
+  </script>
 </body>
 </html>
