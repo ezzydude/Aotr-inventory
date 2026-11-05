@@ -110,6 +110,7 @@
       .dropdown { transition: none; transform: none; }
     }
     .inventory {
+      position: relative;
       width: min(94vw, 1100px);
       height: min(78vh, 820px);
       margin-top: 32px;
@@ -141,6 +142,55 @@
       font-family: "Cinzel", "Trajan Pro", Georgia, serif;
       font-size: 1rem;
       color: #fff1b8;
+    }
+    .add-slot {
+      position: absolute;
+      top: 24px;
+      left: 24px;
+      width: 120px;
+      height: 120px;
+      box-sizing: border-box;
+      padding: 0;
+      cursor: pointer;
+      background: linear-gradient(180deg, #1a1a1a 0%, #000 100%);
+      border: 3px solid #f0b040;
+      color: #fff;
+      font-family: "Cinzel", "Trajan Pro", Georgia, serif;
+      font-size: 3rem;
+      line-height: 1;
+    }
+    .add-slot:hover {
+      border-color: var(--gold-light);
+    }
+    .search-box {
+      width: min(92vw, 520px);
+      max-height: 80vh;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      padding: 20px;
+      box-sizing: border-box;
+      background: #000;
+      border: 2px solid var(--gold-dark);
+      box-shadow: inset 0 0 0 1px rgba(246, 207, 110, 0.25), 0 0 24px rgba(233, 162, 59, 0.15);
+    }
+    input.search-input {
+      width: 100%;
+      min-width: 0;
+      box-sizing: border-box;
+      text-align: left;
+      font-size: 1rem;
+    }
+    .results {
+      flex: 1;
+      min-height: 120px;
+      overflow-y: auto;
+    }
+    .empty {
+      margin: 32px 0;
+      text-align: center;
+      font-family: "Cinzel", "Trajan Pro", Georgia, serif;
+      color: rgba(246, 207, 110, 0.6);
     }
     .overlay {
       position: fixed;
@@ -182,7 +232,18 @@
 
   <h1>Inventory</h1>
 
-  <section class="inventory" aria-label="Inventory"></section>
+  <section class="inventory" aria-label="Inventory">
+    <button type="button" id="addBtn" class="add-slot" aria-label="Add item">+</button>
+  </section>
+
+  <div class="overlay" id="searchOverlay" hidden>
+    <div class="search-box" role="dialog" aria-modal="true" aria-label="Search items">
+      <input class="box search-input" id="searchInput" type="search" placeholder="Search items">
+      <div class="results" id="results">
+        <p class="empty">No items yet.</p>
+      </div>
+    </div>
+  </div>
 
   <div class="overlay" id="usernameOverlay" hidden>
     <form class="panel" id="usernameForm" autocomplete="off">
@@ -289,6 +350,22 @@
         dropdown.classList.remove("open");
         hideUsernamePrompt();
       }
+    });
+
+    const addBtn = $("addBtn");
+    const searchOverlay = $("searchOverlay");
+    const searchInput = $("searchInput");
+
+    addBtn.addEventListener("click", () => {
+      searchOverlay.hidden = false;
+      searchInput.value = "";
+      searchInput.focus();
+    });
+    searchOverlay.addEventListener("click", (e) => {
+      if (e.target === searchOverlay) searchOverlay.hidden = true;
+    });
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") searchOverlay.hidden = true;
     });
 
     form.addEventListener("submit", async (e) => {
