@@ -92,6 +92,21 @@
       position: absolute;
       top: calc(100% + 8px);
       right: 0;
+      opacity: 0;
+      transform: translateY(-8px) scale(0.96);
+      transform-origin: top right;
+      visibility: hidden;
+      pointer-events: none;
+      transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
+    }
+    .dropdown.open {
+      opacity: 1;
+      transform: none;
+      visibility: visible;
+      pointer-events: auto;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .dropdown { transition: none; transform: none; }
     }
     .overlay {
       position: fixed;
@@ -125,7 +140,7 @@
     <button type="button" id="signupBtn" class="box"><span class="gold-text">Sign up</span></button>
     <div class="account" id="account" hidden>
       <button type="button" id="accountBtn" class="box" aria-haspopup="true"><span class="gold-text">Account</span></button>
-      <div class="dropdown" id="dropdown" hidden>
+      <div class="dropdown" id="dropdown">
         <button type="button" id="logoutBtn" class="box"><span class="gold-text">Sign out</span></button>
       </div>
     </div>
@@ -192,13 +207,13 @@
 
     accountBtn.addEventListener("click", (e) => {
       e.stopPropagation();
-      dropdown.hidden = !dropdown.hidden;
+      dropdown.classList.toggle("open");
     });
     document.addEventListener("click", (e) => {
-      if (!account.contains(e.target)) dropdown.hidden = true;
+      if (!account.contains(e.target)) dropdown.classList.remove("open");
     });
     logoutBtn.addEventListener("click", () => {
-      dropdown.hidden = true;
+      dropdown.classList.remove("open");
       auth.signOut();
     });
 
@@ -235,7 +250,7 @@
         loginBtn.hidden = false;
         signupBtn.hidden = false;
         account.hidden = true;
-        dropdown.hidden = true;
+        dropdown.classList.remove("open");
         hideUsernamePrompt();
       }
     });
