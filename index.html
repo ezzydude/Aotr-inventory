@@ -434,6 +434,7 @@
       }
       input.qty-input {
         height: 22px;
+        font-size: 0.75rem;
       }
     }
     .overlay {
@@ -786,10 +787,10 @@
 
     function rarityGradient(rarity) {
       if (String(rarity).toLowerCase() === "event") {
-        return "linear-gradient(180deg, #7a7a7a 0%, #2b2b2b 35%, #000 70%)";
+        return "linear-gradient(180deg, #7a7a7a 0%, #4a4a4a 22%, #1e1e1e 48%, #080808 72%, #000 100%)";
       }
       const glow = RARITY_GLOW[String(rarity).toLowerCase()] || "rgba(240, 176, 64, 0.6)";
-      return "linear-gradient(180deg, #111 0%, #000 55%, " + glow + " 100%)";
+      return "linear-gradient(180deg, #111 0%, #0a0a0a 25%, #000 50%, " + glow + " 85%, " + glow + " 100%)";
     }
 
     let inventoryUid = null;
@@ -807,7 +808,7 @@
         for (const saved of list) {
           const item = items.find((it) => it.name === saved.name);
           if (item && Number.isFinite(saved.count) && saved.count > 0) {
-            inventoryCounts.set(item.name, { item, count: Math.min(Math.floor(saved.count), 999) });
+            inventoryCounts.set(item.name, { item, count: Math.min(Math.floor(saved.count), 99999) });
           }
         }
       }
@@ -834,7 +835,7 @@
         inventoryCounts.delete(name);
       } else {
         const entry = inventoryCounts.get(name);
-        if (entry) entry.count = Math.min(qty, 999);
+        if (entry) entry.count = Math.min(qty, 99999);
       }
       renderInventory();
     }
