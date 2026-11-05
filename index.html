@@ -111,7 +111,7 @@
     }
     .inventory {
       display: grid;
-      grid-template-columns: repeat(auto-fill, 96px);
+      grid-template-columns: repeat(auto-fill, var(--cell));
       justify-content: center;
       align-content: start;
       gap: 16px;
@@ -246,8 +246,17 @@
       width: min(94vw, 1100px);
       margin-top: 32px;
       display: flex;
-      justify-content: flex-end;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
       box-sizing: border-box;
+    }
+    .total {
+      font-family: "Cinzel", "Trajan Pro", Georgia, serif;
+      font-weight: 700;
+      font-size: clamp(0.8rem, 2vw, 1rem);
+      letter-spacing: 0.04em;
+      color: var(--gold);
     }
     .currency {
       position: relative;
@@ -316,6 +325,73 @@
       display: flex;
       gap: 16px;
     }
+    :root {
+      --cell: 96px;
+    }
+    .add-slot {
+      width: var(--cell);
+      height: var(--cell);
+    }
+    .inv-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      width: var(--cell);
+    }
+    .inv-card .slot {
+      width: 100%;
+      height: var(--cell);
+      cursor: pointer;
+    }
+    .qty {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .qty .box {
+      padding: 2px 8px;
+      line-height: 1;
+    }
+    input.qty-input {
+      min-width: 0;
+      width: 48px;
+      padding: 2px 4px;
+      text-align: center;
+      font-size: 0.9rem;
+    }
+    @media (max-width: 600px) {
+      :root {
+        --cell: 80px;
+      }
+      body {
+        padding-top: 12px;
+      }
+      .auth {
+        position: static;
+        align-self: flex-end;
+        margin: 0 12px;
+      }
+      .inventory {
+        height: auto;
+        min-height: 50vh;
+        padding: 16px;
+        gap: 12px;
+      }
+      .currency-bar {
+        margin-top: 16px;
+        width: 94vw;
+      }
+      .total {
+        font-size: 0.8rem;
+      }
+      input.qty-input {
+        width: 40px;
+      }
+      .qty .box {
+        padding: 2px 6px;
+      }
+    }
     .overlay {
       position: fixed;
       inset: 0;
@@ -357,6 +433,7 @@
   <h1>Inventory</h1>
 
   <div class="currency-bar">
+    <span class="total" id="total"></span>
     <div class="currency" id="currency">
       <div class="currency-menu" id="currencyMenu">
         <button type="button" class="box" data-currency="keys"><span class="gold-text">Keys</span></button>
@@ -627,35 +704,101 @@
       return trimNum(n, n >= 1 ? 2 : 4);
     }
 
-    function displayValue(item) {
-      if (currency === "keys") return item.value;
+    function displayValue(item, qty = 1) {
       const n = parseKeys(item.value);
       if (n === null) return item.value;
-      return formatNum(n * currencies[currency].perKey);
+      return formatNum(n * qty * currencies[currency].perKey);
+    }
+
+    const RARITY_COLORS = {
+      common: "#d0d0d0",
+      uncommon: "#5fd35f",
+      rare: "#3fa9ff",
+      epic: "#b26bff",
+      legendary: "#f5b642",
+      mythic: "#ff4d4d",
+      divine: "#9ef0ff",
+      event: "#ff8c42"
+    };
+
+    function rarityColor(rarity) {
+      return RARITY_COLORS[String(rarity).toLowerCase()] || "#f0b040";
+    }
+
+    const totalEl = $("total");
+
+    function updateTotal() {
+      let total = 0;
+      for (const { item, count } of inventoryCounts.values()) {
+        const n = parseKeys(item.value);
+        if (n !== null) total += n * count * currencies[currency].perKey;
+      }
+      totalEl.textContent = "Total: " + formatNum(total) + " " + currencies[currency].label;
     }
 
     const inventoryEl = $("inventory");
     const inventoryCounts = new Map();
 
+    function setQty(name, qty) {
+      if (!Number.isFinite(qty) || qty < 1) {
+        inventoryCounts.delete(name);
+      } else {
+        const entry = inventoryCounts.get(name);
+        if (entry) entry.count = Math.min(qty, 999);
+      }
+      renderInventory();
+    }
+
     function renderInventory() {
-      inventoryEl.querySelectorAll(".slot.item").forEach((el) => el.remove());
+      inventoryEl.querySelectorAll(".inv-card").forEach((el) => el.remove());
       for (const { item, count } of inventoryCounts.values()) {
+        const card = document.createElement("div");
+        card.className = "inv-card";
+
         const slot = document.createElement("div");
         slot.className = "slot item";
-        slot.title = item.name + " (" + item.rarity + ", " + displayValue(item) + ")";
+        slot.style.borderColor = rarityColor(item.rarity);
+        slot.title = item.name + " (" + item.rarity + ")";
         const label = document.createElement("span");
         label.className = "item-label";
         label.textContent = item.name;
         const valueEl = document.createElement("span");
         valueEl.className = "item-value";
-        valueEl.textContent = displayValue(item);
-        const countEl = document.createElement("span");
-        countEl.className = "count";
-        countEl.textContent = count;
-        slot.append(label, valueEl, countEl);
+        valueEl.textContent = displayValue(item, count);
+        slot.append(label, valueEl);
         slot.addEventListener("click", () => openEditor(item.name));
-        inventoryEl.appendChild(slot);
+
+        const qty = document.createElement("div");
+        qty.className = "qty";
+        const minus = document.createElement("button");
+        minus.type = "button";
+        minus.className = "box";
+        minus.setAttribute("aria-label", "Decrease quantity");
+        minus.innerHTML = '<span class="gold-text">−</span>';
+        const input = document.createElement("input");
+        input.className = "box qty-input";
+        input.type = "number";
+        input.min = "0";
+        input.step = "1";
+        input.value = count;
+        input.setAttribute("aria-label", "Quantity");
+        const plus = document.createElement("button");
+        plus.type = "button";
+        plus.className = "box";
+        plus.setAttribute("aria-label", "Increase quantity");
+        plus.innerHTML = '<span class="gold-text">+</span>';
+
+        minus.addEventListener("click", () => setQty(item.name, count - 1));
+        plus.addEventListener("click", () => setQty(item.name, count + 1));
+        input.addEventListener("change", () => {
+          if (input.value !== "") setQty(item.name, Math.floor(Number(input.value)));
+        });
+
+        qty.append(minus, input, plus);
+        card.append(slot, qty);
+        inventoryEl.appendChild(card);
       }
+      updateTotal();
     }
 
     function addToInventory(item) {
@@ -683,6 +826,7 @@
         row.addEventListener("click", () => addToInventory(it));
         const slot = document.createElement("div");
         slot.className = "item-slot";
+        slot.style.borderColor = rarityColor(it.rarity);
         const info = document.createElement("div");
         info.className = "item-info";
         const name = document.createElement("span");
@@ -690,6 +834,7 @@
         name.textContent = it.name;
         const meta = document.createElement("small");
         meta.textContent = it.rarity + "  ·  Value: " + displayValue(it);
+        meta.style.color = rarityColor(it.rarity);
         info.append(name, meta);
         row.append(slot, info);
         results.appendChild(row);
@@ -780,7 +925,7 @@
       if (!entry) return;
       editingName = name;
       editName.textContent = entry.item.name;
-      editValue.textContent = "Value: " + displayValue(entry.item);
+      editValue.textContent = "Value: " + displayValue(entry.item, entry.count);
       editQty.value = entry.count;
       editOverlay.hidden = false;
       editQty.focus();
