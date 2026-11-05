@@ -192,6 +192,35 @@
       font-family: "Cinzel", "Trajan Pro", Georgia, serif;
       color: rgba(246, 207, 110, 0.6);
     }
+    .item-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 10px 4px;
+      border-bottom: 1px solid rgba(246, 207, 110, 0.15);
+    }
+    .item-slot {
+      flex: 0 0 56px;
+      height: 56px;
+      box-sizing: border-box;
+      background: linear-gradient(180deg, #161616 0%, #000 100%);
+      border: 2px solid #f0b040;
+    }
+    .item-info {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      min-width: 0;
+    }
+    .item-info .gold-text {
+      white-space: normal;
+      font-size: 0.9rem;
+    }
+    .item-info small {
+      font-family: "Cinzel", "Trajan Pro", Georgia, serif;
+      font-size: 0.8rem;
+      color: rgba(246, 207, 110, 0.7);
+    }
     .overlay {
       position: fixed;
       inset: 0;
@@ -239,9 +268,7 @@
   <div class="overlay" id="searchOverlay" hidden>
     <div class="search-box" role="dialog" aria-modal="true" aria-label="Search items">
       <input class="box search-input" id="searchInput" type="search" placeholder="Search items">
-      <div class="results" id="results">
-        <p class="empty">No items yet.</p>
-      </div>
+      <div class="results" id="results"></div>
     </div>
   </div>
 
@@ -356,11 +383,64 @@
     const searchOverlay = $("searchOverlay");
     const searchInput = $("searchInput");
 
+    const items = [
+      { name: "Monarch's Aura", rarity: "Divine", value: "O/C" },
+      { name: "Kamish's Wrath (R)", rarity: "Mythic", value: "O/C" },
+      { name: "Kamish's Wrath (L)", rarity: "Mythic", value: "O/C" },
+      { name: "Sung Dripwoo's Attire", rarity: "Mythic", value: "O/C" },
+      { name: "Third Eye", rarity: "Divine", value: "1.2M" },
+      { name: "Vulcan's Grace", rarity: "Divine", value: "574K" },
+      { name: "Eclipse", rarity: "Mythic", value: "473K" },
+      { name: "Ad Astra", rarity: "Mythic", value: "176K" },
+      { name: "Seraphic", rarity: "Legendary", value: "96.8K" },
+      { name: "Matrix", rarity: "Legendary", value: "74.3K" },
+      { name: "Toji's Attire", rarity: "Legendary", value: "45.9K" },
+      { name: "Ulquiorra's Wings", rarity: "Legendary", value: "40K" },
+      { name: "Bambietta's Wings", rarity: "Legendary", value: "37.8K" },
+      { name: "Zangetsu", rarity: "Legendary", value: "22.5K" },
+      { name: "Primera's Attire", rarity: "Legendary", value: "16.2K" },
+      { name: "Black Flash", rarity: "Legendary", value: "10.8K" },
+      { name: "Cursed Markings", rarity: "Legendary", value: "7.2K" },
+      { name: "Mahoraga's Wheel", rarity: "Epic", value: "6.3K" }
+    ];
+    const results = $("results");
+
+    function renderResults() {
+      const q = searchInput.value.trim().toLowerCase();
+      const matches = items.filter((it) => it.name.toLowerCase().includes(q));
+      results.innerHTML = "";
+      if (matches.length === 0) {
+        const p = document.createElement("p");
+        p.className = "empty";
+        p.textContent = "No items found.";
+        results.appendChild(p);
+        return;
+      }
+      for (const it of matches) {
+        const row = document.createElement("div");
+        row.className = "item-row";
+        const slot = document.createElement("div");
+        slot.className = "item-slot";
+        const info = document.createElement("div");
+        info.className = "item-info";
+        const name = document.createElement("span");
+        name.className = "gold-text";
+        name.textContent = it.name;
+        const meta = document.createElement("small");
+        meta.textContent = it.rarity + "  ·  Value: " + it.value;
+        info.append(name, meta);
+        row.append(slot, info);
+        results.appendChild(row);
+      }
+    }
+
     addBtn.addEventListener("click", () => {
       searchOverlay.hidden = false;
       searchInput.value = "";
+      renderResults();
       searchInput.focus();
     });
+    searchInput.addEventListener("input", renderResults);
     searchOverlay.addEventListener("click", (e) => {
       if (e.target === searchOverlay) searchOverlay.hidden = true;
     });
