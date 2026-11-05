@@ -112,7 +112,7 @@
     .inventory {
       display: grid;
       grid-template-columns: repeat(auto-fill, var(--cell));
-      justify-content: center;
+      justify-content: space-between;
       align-content: start;
       gap: 16px;
       overflow-y: auto;
@@ -358,6 +358,15 @@
       padding: 2px 4px;
       text-align: center;
       font-size: 0.9rem;
+    }
+    input.qty-input::-webkit-outer-spin-button,
+    input.qty-input::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    input.qty-input {
+      -moz-appearance: textfield;
+      appearance: textfield;
     }
     @media (max-width: 600px) {
       :root {
@@ -736,7 +745,7 @@
       legendary: "rgba(245, 170, 40, 0.6)",
       mythic: "rgba(255, 50, 50, 0.6)",
       divine: "rgba(158, 240, 255, 0.5)",
-      event: "rgba(255, 140, 66, 0.6)"
+      event: "rgba(214, 150, 60, 0.6)"
     };
 
     function rarityGradient(rarity) {
@@ -799,7 +808,6 @@
 
         const slot = document.createElement("div");
         slot.className = "slot item";
-        slot.style.borderColor = rarityColor(item.rarity);
         slot.style.background = rarityGradient(item.rarity);
         slot.title = item.name + " (" + item.rarity + ")";
         const label = document.createElement("span");
@@ -869,7 +877,6 @@
         row.addEventListener("click", () => addToInventory(it));
         const slot = document.createElement("div");
         slot.className = "item-slot";
-        slot.style.borderColor = rarityColor(it.rarity);
         slot.style.background = rarityGradient(it.rarity);
         const info = document.createElement("div");
         info.className = "item-info";
