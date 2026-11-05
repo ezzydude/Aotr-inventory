@@ -434,7 +434,9 @@
       }
       input.qty-input {
         height: 22px;
-        font-size: 0.75rem;
+        padding: 0;
+        font-size: 0.65rem;
+        letter-spacing: 0;
       }
     }
     .overlay {
@@ -789,8 +791,11 @@
       if (String(rarity).toLowerCase() === "event") {
         return "linear-gradient(180deg, #7a7a7a 0%, #4a4a4a 22%, #1e1e1e 48%, #080808 72%, #000 100%)";
       }
-      const glow = RARITY_GLOW[String(rarity).toLowerCase()] || "rgba(240, 176, 64, 0.6)";
-      return "linear-gradient(180deg, #111 0%, #0a0a0a 25%, #000 50%, " + glow + " 85%, " + glow + " 100%)";
+      const base = RARITY_GLOW[String(rarity).toLowerCase()] || "rgba(240, 176, 64, 0.6)";
+      const rgb = base.match(/\d+/g).slice(0, 3).join(", ");
+      const stops = [[45, 0], [60, 0.06], [72, 0.16], [84, 0.32], [93, 0.5], [100, 0.7]];
+      const layers = stops.map(([pos, a]) => "rgba(" + rgb + ", " + a + ") " + pos + "%").join(", ");
+      return "linear-gradient(180deg, #111 0%, #000 45%, " + layers + ")";
     }
 
     let inventoryUid = null;
