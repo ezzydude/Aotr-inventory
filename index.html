@@ -400,6 +400,42 @@
         padding: 2px 6px;
       }
     }
+    .qty {
+      width: 100%;
+      justify-content: space-between;
+      gap: 4px;
+    }
+    .qty .box {
+      flex: 0 0 26px;
+      width: 26px;
+      height: 26px;
+      padding: 0;
+      box-sizing: border-box;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    input.qty-input {
+      flex: 1 1 0;
+      width: auto;
+      min-width: 0;
+      height: 26px;
+      padding: 0 2px;
+      box-sizing: border-box;
+    }
+    @media (max-width: 600px) {
+      .qty {
+        gap: 2px;
+      }
+      .qty .box {
+        flex-basis: 22px;
+        width: 22px;
+        height: 22px;
+      }
+      input.qty-input {
+        height: 22px;
+      }
+    }
     .overlay {
       position: fixed;
       inset: 0;
@@ -749,6 +785,9 @@
     };
 
     function rarityGradient(rarity) {
+      if (String(rarity).toLowerCase() === "event") {
+        return "linear-gradient(180deg, #7a7a7a 0%, #2b2b2b 35%, #000 70%)";
+      }
       const glow = RARITY_GLOW[String(rarity).toLowerCase()] || "rgba(240, 176, 64, 0.6)";
       return "linear-gradient(180deg, #111 0%, #000 55%, " + glow + " 100%)";
     }
