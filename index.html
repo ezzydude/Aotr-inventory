@@ -21,8 +21,9 @@
     }
     body {
       display: flex;
-      align-items: flex-start;
-      justify-content: center;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
       padding-top: 24px;
       box-sizing: border-box;
     }
@@ -108,6 +109,38 @@
     @media (prefers-reduced-motion: reduce) {
       .dropdown { transition: none; transform: none; }
     }
+    .inventory {
+      width: min(92vw, 600px);
+      margin-top: 32px;
+      padding: 24px;
+      box-sizing: border-box;
+      background: #000;
+      border: 2px solid var(--gold-dark);
+      box-shadow: inset 0 0 0 1px rgba(246, 207, 110, 0.25), 0 0 24px rgba(233, 162, 59, 0.15);
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, 96px);
+      justify-content: center;
+      gap: 16px;
+    }
+    .slot {
+      position: relative;
+      width: 96px;
+      height: 96px;
+      box-sizing: border-box;
+      background: linear-gradient(180deg, #161616 0%, #000 100%);
+      border: 2px solid #f0b040;
+      box-shadow: inset 0 0 0 1px rgba(246, 207, 110, 0.2);
+    }
+    .slot .count {
+      position: absolute;
+      right: 6px;
+      bottom: 2px;
+      font-family: "Cinzel", "Trajan Pro", Georgia, serif;
+      font-size: 1rem;
+      color: #fff1b8;
+    }
     .overlay {
       position: fixed;
       inset: 0;
@@ -147,6 +180,31 @@
   </nav>
 
   <h1>Inventory</h1>
+
+  <section class="inventory" aria-label="Inventory">
+    <div class="grid">
+      <div class="slot"></div>
+      <div class="slot"></div>
+      <div class="slot"></div>
+      <div class="slot"></div>
+      <div class="slot"></div>
+      <div class="slot"></div>
+      <div class="slot"></div>
+      <div class="slot"></div>
+      <div class="slot"></div>
+      <div class="slot"></div>
+      <div class="slot"></div>
+      <div class="slot"></div>
+      <div class="slot"></div>
+      <div class="slot"></div>
+      <div class="slot"></div>
+      <div class="slot"></div>
+      <div class="slot"></div>
+      <div class="slot"></div>
+      <div class="slot"></div>
+      <div class="slot"></div>
+    </div>
+  </section>
 
   <div class="overlay" id="usernameOverlay" hidden>
     <form class="panel" id="usernameForm" autocomplete="off">
