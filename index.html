@@ -45,6 +45,7 @@
       font-size: clamp(0.8rem, 2vw, 1rem);
       letter-spacing: 0.08em;
       text-transform: uppercase;
+      white-space: nowrap;
       background-image: linear-gradient(180deg, var(--gold-light) 0%, var(--gold) 50%, var(--gold-dark) 100%);
       -webkit-background-clip: text;
       background-clip: text;
@@ -82,6 +83,15 @@
       right: 20px;
       display: flex;
       gap: 20px;
+      align-items: flex-start;
+    }
+    .account {
+      position: relative;
+    }
+    .dropdown {
+      position: absolute;
+      top: calc(100% + 8px);
+      right: 0;
     }
     .overlay {
       position: fixed;
@@ -113,7 +123,12 @@
   <nav class="auth">
     <button type="button" id="loginBtn" class="box"><span class="gold-text">Login</span></button>
     <button type="button" id="signupBtn" class="box"><span class="gold-text">Sign up</span></button>
-    <button type="button" id="logoutBtn" class="box" hidden><span class="gold-text">Sign out</span></button>
+    <div class="account" id="account" hidden>
+      <button type="button" id="accountBtn" class="box" aria-haspopup="true"><span class="gold-text">Account</span></button>
+      <div class="dropdown" id="dropdown" hidden>
+        <button type="button" id="logoutBtn" class="box"><span class="gold-text">Sign out</span></button>
+      </div>
+    </div>
   </nav>
 
   <h1>Inventory</h1>
@@ -149,6 +164,9 @@
     const $ = (id) => document.getElementById(id);
     const loginBtn = $("loginBtn");
     const signupBtn = $("signupBtn");
+    const account = $("account");
+    const accountBtn = $("accountBtn");
+    const dropdown = $("dropdown");
     const logoutBtn = $("logoutBtn");
     const overlay = $("usernameOverlay");
     const form = $("usernameForm");
@@ -169,11 +187,20 @@
       }
     }
 
-    loginBtn.addEventListener("click", () => {
-      if (!auth.currentUser) googleSignIn();
-    });
+    loginBtn.addEventListener("click", googleSignIn);
     signupBtn.addEventListener("click", googleSignIn);
-    logoutBtn.addEventListener("click", () => auth.signOut());
+
+    accountBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      dropdown.hidden = !dropdown.hidden;
+    });
+    document.addEventListener("click", (e) => {
+      if (!account.contains(e.target)) dropdown.hidden = true;
+    });
+    logoutBtn.addEventListener("click", () => {
+      dropdown.hidden = true;
+      auth.signOut();
+    });
 
     function showUsernamePrompt() {
       overlay.hidden = false;
@@ -188,25 +215,27 @@
 
     auth.onAuthStateChanged(async (user) => {
       if (user) {
+        loginBtn.hidden = true;
         signupBtn.hidden = true;
-        logoutBtn.hidden = false;
-        setLabel(loginBtn, "Loading");
+        account.hidden = false;
+        setLabel(accountBtn, "Loading");
         try {
           const snap = await db.collection("users").doc(user.uid).get();
           if (snap.exists && snap.data().username) {
-            setLabel(loginBtn, snap.data().username);
+            setLabel(accountBtn, snap.data().username);
             hideUsernamePrompt();
           } else {
-            setLabel(loginBtn, (user.displayName || user.email || "Account").split(" ")[0]);
+            setLabel(accountBtn, (user.displayName || user.email || "Account").split(" ")[0]);
             showUsernamePrompt();
           }
         } catch (err) {
           alert("Could not load your account: " + err.message);
         }
       } else {
-        setLabel(loginBtn, "Login");
+        loginBtn.hidden = false;
         signupBtn.hidden = false;
-        logoutBtn.hidden = true;
+        account.hidden = true;
+        dropdown.hidden = true;
         hideUsernamePrompt();
       }
     });
@@ -235,7 +264,7 @@
           tx.set(nameRef, { uid: user.uid });
           tx.set(userRef, { username: username, usernameKey: key }, { merge: true });
         });
-        setLabel(loginBtn, username);
+        setLabel(accountBtn, username);
         hideUsernamePrompt();
       } catch (err) {
         errorEl.textContent = err.message;
