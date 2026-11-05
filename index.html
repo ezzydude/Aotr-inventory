@@ -110,7 +110,12 @@
       .dropdown { transition: none; transform: none; }
     }
     .inventory {
-      position: relative;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, 96px);
+      justify-content: center;
+      align-content: start;
+      gap: 16px;
+      overflow-y: auto;
       width: min(94vw, 1100px);
       height: min(78vh, 820px);
       margin-top: 32px;
@@ -144,11 +149,8 @@
       color: #fff1b8;
     }
     .add-slot {
-      position: absolute;
-      top: 24px;
-      left: 24px;
-      width: 120px;
-      height: 120px;
+      width: 96px;
+      height: 96px;
       box-sizing: border-box;
       padding: 0;
       cursor: pointer;
@@ -192,7 +194,23 @@
       font-family: "Cinzel", "Trajan Pro", Georgia, serif;
       color: rgba(246, 207, 110, 0.6);
     }
+    .slot .item-label {
+      position: absolute;
+      inset: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2px;
+      text-align: center;
+      font-family: "Cinzel", "Trajan Pro", Georgia, serif;
+      font-size: 0.65rem;
+      line-height: 1.1;
+      color: var(--gold);
+      overflow: hidden;
+      word-break: break-word;
+    }
     .item-row {
+      cursor: pointer;
       display: flex;
       align-items: center;
       gap: 14px;
@@ -261,7 +279,7 @@
 
   <h1>Inventory</h1>
 
-  <section class="inventory" aria-label="Inventory">
+  <section class="inventory" id="inventory" aria-label="Inventory">
     <button type="button" id="addBtn" class="add-slot" aria-label="Add item">+</button>
   </section>
 
@@ -481,6 +499,34 @@
 
     const results = $("results");
 
+    const inventoryEl = $("inventory");
+    const inventoryCounts = new Map();
+
+    function renderInventory() {
+      inventoryEl.querySelectorAll(".slot.item").forEach((el) => el.remove());
+      for (const { item, count } of inventoryCounts.values()) {
+        const slot = document.createElement("div");
+        slot.className = "slot item";
+        slot.title = item.name + " (" + item.rarity + ", " + item.value + ")";
+        const label = document.createElement("span");
+        label.className = "item-label";
+        label.textContent = item.name;
+        const countEl = document.createElement("span");
+        countEl.className = "count";
+        countEl.textContent = count;
+        slot.append(label, countEl);
+        inventoryEl.appendChild(slot);
+      }
+    }
+
+    function addToInventory(item) {
+      const entry = inventoryCounts.get(item.name) || { item, count: 0 };
+      entry.count += 1;
+      inventoryCounts.set(item.name, entry);
+      renderInventory();
+      searchOverlay.hidden = true;
+    }
+
     function renderResults() {
       const q = searchInput.value.trim().toLowerCase();
       const matches = items.filter((it) => it.name.toLowerCase().includes(q));
@@ -495,6 +541,7 @@
       for (const it of matches) {
         const row = document.createElement("div");
         row.className = "item-row";
+        row.addEventListener("click", () => addToInventory(it));
         const slot = document.createElement("div");
         slot.className = "item-slot";
         const info = document.createElement("div");
