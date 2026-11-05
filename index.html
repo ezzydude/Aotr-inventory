@@ -342,7 +342,6 @@
     .inv-card .slot {
       width: 100%;
       height: var(--cell);
-      cursor: pointer;
     }
     .qty {
       display: flex;
@@ -558,6 +557,7 @@
         setLabel(accountBtn, "Loading");
         try {
           const snap = await db.collection("users").doc(user.uid).get();
+          loadInventory(user.uid, snap.exists ? snap.data().inventory : []);
           if (snap.exists && snap.data().username) {
             setLabel(accountBtn, snap.data().username);
             hideUsernamePrompt();
@@ -572,6 +572,9 @@
         loginBtn.hidden = false;
         signupBtn.hidden = false;
         account.hidden = true;
+        inventoryUid = null;
+        inventoryCounts.clear();
+        renderInventory();
         dropdown.classList.remove("open");
         hideUsernamePrompt();
       }
@@ -725,6 +728,45 @@
       return RARITY_COLORS[String(rarity).toLowerCase()] || "#f0b040";
     }
 
+    const RARITY_GLOW = {
+      common: "rgba(160, 160, 160, 0.55)",
+      uncommon: "rgba(60, 200, 60, 0.6)",
+      rare: "rgba(40, 140, 255, 0.6)",
+      epic: "rgba(150, 70, 255, 0.6)",
+      legendary: "rgba(245, 170, 40, 0.6)",
+      mythic: "rgba(255, 50, 50, 0.6)",
+      divine: "rgba(158, 240, 255, 0.5)",
+      event: "rgba(255, 140, 66, 0.6)"
+    };
+
+    function rarityGradient(rarity) {
+      const glow = RARITY_GLOW[String(rarity).toLowerCase()] || "rgba(240, 176, 64, 0.6)";
+      return "linear-gradient(180deg, #111 0%, #000 55%, " + glow + " 100%)";
+    }
+
+    let inventoryUid = null;
+
+    function saveInventory() {
+      if (!inventoryUid) return;
+      const list = [...inventoryCounts.values()].map(({ item, count }) => ({ name: item.name, count }));
+      db.collection("users").doc(inventoryUid).set({ inventory: list }, { merge: true })
+        .catch((err) => alert("Could not save your inventory: " + err.message));
+    }
+
+    function loadInventory(uid, list) {
+      inventoryCounts.clear();
+      if (Array.isArray(list)) {
+        for (const saved of list) {
+          const item = items.find((it) => it.name === saved.name);
+          if (item && Number.isFinite(saved.count) && saved.count > 0) {
+            inventoryCounts.set(item.name, { item, count: Math.min(Math.floor(saved.count), 999) });
+          }
+        }
+      }
+      inventoryUid = uid;
+      renderInventory();
+    }
+
     const totalEl = $("total");
 
     function updateTotal() {
@@ -758,6 +800,7 @@
         const slot = document.createElement("div");
         slot.className = "slot item";
         slot.style.borderColor = rarityColor(item.rarity);
+        slot.style.background = rarityGradient(item.rarity);
         slot.title = item.name + " (" + item.rarity + ")";
         const label = document.createElement("span");
         label.className = "item-label";
@@ -766,7 +809,6 @@
         valueEl.className = "item-value";
         valueEl.textContent = displayValue(item, count);
         slot.append(label, valueEl);
-        slot.addEventListener("click", () => openEditor(item.name));
 
         const qty = document.createElement("div");
         qty.className = "qty";
@@ -799,6 +841,7 @@
         inventoryEl.appendChild(card);
       }
       updateTotal();
+      saveInventory();
     }
 
     function addToInventory(item) {
@@ -827,6 +870,7 @@
         const slot = document.createElement("div");
         slot.className = "item-slot";
         slot.style.borderColor = rarityColor(it.rarity);
+        slot.style.background = rarityGradient(it.rarity);
         const info = document.createElement("div");
         info.className = "item-info";
         const name = document.createElement("span");
