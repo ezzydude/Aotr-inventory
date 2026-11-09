@@ -790,13 +790,13 @@
 
     function rarityGradient(rarity) {
       if (String(rarity).toLowerCase() === "event") {
-        return "linear-gradient(180deg, #7a7a7a 0%, #4a4a4a 22%, #1e1e1e 48%, #080808 72%, #000 100%)";
+        return "linear-gradient(180deg, #7a7a7a 0%, #5a5a5a 15%, #3a3a3a 35%, #1c1c1c 60%, #000 90%)";
       }
       const base = RARITY_GLOW[String(rarity).toLowerCase()] || "rgba(240, 176, 64, 0.6)";
       const rgb = base.match(/\d+/g).slice(0, 3).join(", ");
-      const stops = [[45, 0], [60, 0.06], [72, 0.16], [84, 0.32], [93, 0.5], [100, 0.7]];
+      const stops = [[20, 0], [35, 0.05], [50, 0.12], [65, 0.25], [80, 0.4], [92, 0.55], [100, 0.75]];
       const layers = stops.map(([pos, a]) => "rgba(" + rgb + ", " + a + ") " + pos + "%").join(", ");
-      return "linear-gradient(180deg, #111 0%, #000 45%, " + layers + ")";
+      return "linear-gradient(180deg, #111 0%, #000 20%, " + layers + ")";
     }
 
     let inventoryUid = null;
@@ -873,9 +873,9 @@
         minus.innerHTML = '<span class="gold-text">−</span>';
         const input = document.createElement("input");
         input.className = "box qty-input";
-        input.type = "number";
-        input.min = "0";
-        input.step = "1";
+        input.type = "text";
+        input.inputMode = "numeric";
+        input.maxLength = 5;
         input.value = count;
         input.setAttribute("aria-label", "Quantity");
         const plus = document.createElement("button");
@@ -887,7 +887,9 @@
         minus.addEventListener("click", () => setQty(item.name, count - 1));
         plus.addEventListener("click", () => setQty(item.name, count + 1));
         input.addEventListener("change", () => {
-          if (input.value !== "") setQty(item.name, Math.floor(Number(input.value)));
+          const typed = parseInt(input.value.replace(/\D/g, ""), 10);
+          if (!Number.isNaN(typed)) setQty(item.name, typed);
+          else renderInventory();
         });
 
         qty.append(minus, input, plus);
