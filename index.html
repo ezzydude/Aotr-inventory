@@ -794,9 +794,9 @@
       }
       const base = RARITY_GLOW[String(rarity).toLowerCase()] || "rgba(240, 176, 64, 0.6)";
       const rgb = base.match(/\d+/g).slice(0, 3).join(", ");
-      const stops = [[20, 0], [35, 0.05], [50, 0.12], [65, 0.25], [80, 0.4], [92, 0.55], [100, 0.75]];
+      const stops = [[5, 0], [20, 0.04], [35, 0.1], [50, 0.18], [65, 0.28], [80, 0.42], [92, 0.58], [100, 0.8]];
       const layers = stops.map(([pos, a]) => "rgba(" + rgb + ", " + a + ") " + pos + "%").join(", ");
-      return "linear-gradient(180deg, #111 0%, #000 20%, " + layers + ")";
+      return "linear-gradient(180deg, #111 0%, #000 5%, " + layers + ")";
     }
 
     let inventoryUid = null;
