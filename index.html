@@ -796,7 +796,7 @@
       const rgb = base.match(/\d+/g).slice(0, 3).join(", ");
       const stops = [[55, 0], [70, 0.12], [82, 0.3], [92, 0.5], [97, 0.75], [100, 0.95]];
       const layers = stops.map(([pos, a]) => "rgba(" + rgb + ", " + a + ") " + pos + "%").join(", ");
-      return "linear-gradient(180deg, #0d0d0d 0%, #000 45%, " + layers + ")";
+      return "linear-gradient(180deg, #5c5c5c 0%, #262626 18%, #000 45%, " + layers + ")";
     }
 
     let inventoryUid = null;
